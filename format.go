@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ibrokethecloud/klar/clair"
 	"github.com/olekukonko/tablewriter"
-	"github.com/optiopay/klar/clair"
 )
 
 var SeverityStyle = map[string]string{
