@@ -170,9 +170,9 @@ func newLayerV3(image *docker.Image, index int) *clairpb.PostAncestryRequest_Pos
 
 func (a *apiV3) Analyze(image *docker.Image) ([]*Vulnerability, error) {
 	req := &clairpb.GetAncestryRequest{
-		AncestryName:        image.Name,
-		WithFeatures:        true,
-		WithVulnerabilities: true,
+		AncestryName: image.Name,
+		//		WithFeatures:        true,
+		//		WithVulnerabilities: true,
 	}
 
 	resp, err := a.client.GetAncestry(context.Background(), req)
@@ -180,16 +180,19 @@ func (a *apiV3) Analyze(image *docker.Image) ([]*Vulnerability, error) {
 		return nil, err
 	}
 	var vs []*Vulnerability
-	for _, f := range resp.Ancestry.Features {
-		for _, v := range f.Vulnerabilities {
-			cv := convertVulnerability(v)
-			cv.FeatureName = f.Name
-			cv.FeatureVersion = f.Version
-			//the for loop uses the same variable for "cv", reloading with new values
-			//since we are appending a pointer to the variable to the slice, we need to create a copy of the struct
-			//otherwise the slice winds up with multiple pointers to the same struct
-			vulnerability := cv
-			vs = append(vs, vulnerability)
+	for _, l := range resp.GetAncestry().GetLayers() {
+		for _, f := range l.GetDetectedFeatures() {
+			for _, v := range f.GetVulnerabilities() {
+
+				cv := convertVulnerability(v)
+				cv.FeatureName = f.Name
+				cv.FeatureVersion = f.Version
+				//the for loop uses the same variable for "cv", reloading with new values
+				//since we are appending a pointer to the variable to the slice, we need to create a copy of the struct
+				//otherwise the slice winds up with multiple pointers to the same struct
+				vulnerability := cv
+				vs = append(vs, vulnerability)
+			}
 		}
 	}
 	return vs, nil
